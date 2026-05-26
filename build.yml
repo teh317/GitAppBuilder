@@ -8,8 +8,8 @@ on:
 # Change these two values to instantly re-brand the pipeline
 # ==========================================
 env:
-  APP_NAME: "SAGE"
-  APP_ID: "com.asilientertainment.sage"
+  APP_NAME: "App"
+  APP_ID: "com.anon.app"
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
@@ -32,11 +32,11 @@ jobs:
           java-version: '21'
 
       - name: Install Base Packages
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: Inject Capacitor Configurations
         run: |
-          npm install @capacitor/core @capacitor/cli @capacitor/android
+          npm install @capacitor/core @capacitor/cli @capacitor/android --legacy-peer-deps
           
           cat << 'EOF' > capacitor.config.json
           {
@@ -55,18 +55,6 @@ jobs:
             npx cap add android
           fi
 
-      - name: Force Native Landscape & Desktop Scaling
-        run: |
-          MANIFEST_PATH="android/app/src/main/AndroidManifest.xml"
-          if [ -f "$MANIFEST_PATH" ]; then
-            sed -i 's/android:name=".MainActivity"/android:name=".MainActivity" android:screenOrientation="landscape"/g' "$MANIFEST_PATH"
-          fi
-          
-          INDEX_PATH="dist/index.html"
-          if [ -f "$INDEX_PATH" ]; then
-            sed -i 's/<head>/<head><meta name="viewport" content="width=1280, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">/g' "$INDEX_PATH"
-          fi
-
       - name: Sync Web Files to Android Wrapper
         run: npx cap sync android
 
@@ -75,7 +63,7 @@ jobs:
         run: |
           if [ -f "logo.png" ] || [ -f "icon.png" ]; then
             SRC_IMG=$( [ -f "logo.png" ] && echo "logo.png" || echo "icon.png" )
-            npm install jimp@0.22.12
+            npm install jimp@0.22.12 --legacy-peer-deps
             node -e "
               const Jimp = require('jimp');
               Jimp.read('$SRC_IMG').then(img => {
@@ -95,7 +83,7 @@ jobs:
             mkdir -p assets
             cp square-logo.png assets/logo.png
             
-            npm install @capacitor/assets
+            npm install @capacitor/assets --legacy-peer-deps
             npx @capacitor/assets generate
           fi
 
@@ -134,7 +122,7 @@ jobs:
           node-version: '22'
 
       - name: Install Frontend Dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: Build Frontend Web Assets
         run: npm run build
@@ -143,7 +131,7 @@ jobs:
         shell: bash
         run: |
           echo "Installing local Tauri system CLI layer..."
-          npm install -D @tauri-apps/cli
+          npm install -D @tauri-apps/cli --legacy-peer-deps
           
           echo "Automating full baseline Rust boilerplate setup..."
           npx tauri init --ci --force
